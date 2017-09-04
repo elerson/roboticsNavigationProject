@@ -1,0 +1,3 @@
+# Get the map as a nav_msgs/OccupancyGrid
+---
+geometry_msgs/PoseStamped pose
