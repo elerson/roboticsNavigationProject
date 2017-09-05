@@ -1,2 +1,0 @@
-int32 motor_position
-int32 sterring_position
