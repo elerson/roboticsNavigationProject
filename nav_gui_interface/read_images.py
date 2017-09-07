@@ -38,6 +38,7 @@ class ReadGoogleImages():
     #top = (-data['top'])%256
     #left = (-data['left'])%256
     #self.image = self.image[top: top + height, left:left + width,:]
+    
   def saveImage(self, imageFile='tmp/map.png'):
     skimage.io.imsave(imageFile, self.image)
 

@@ -5,9 +5,9 @@ from math import radians, cos, sin, asin, sqrt, atan2, degrees, pi, log, tan
 import pid_class
 import wp_manager
 
-from ros_tamiya.msg import Gps_msg
-from ros_tamiya.msg import Imu
-from ros_tamiya.msg import gps_coord
+from robot_controller.msg import Gps_msg
+from robot_controller.msg import Imu
+from robot_controller.msg import gps_coord
 from std_msgs.msg import Float32
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
@@ -71,7 +71,7 @@ class RobotCar:
         rospy.Subscriber("gps", Gps_msg, self.setGPS)
         rospy.Subscriber("imu", Imu, self.setImu)
 
-        self.current_pose_publisher = rospy.Publisher('current_position', gps_coord, queue_size=1)
+        self.current_pose_publisher = rospy.Publisher('current_position_gps', gps_coord, queue_size=1)
 
         #rospy.Subscriber("heading", Float32, self.setHeading)
         pass
@@ -215,9 +215,8 @@ class RobotCar:
         #publish current position and heading
         current_pos_msg = gps_coord()
         current_pos_msg.header.stamp = rospy.Time.now()
-	current_pos_msg.header.frame_id = "current_pos"
-
-	current_pos_msg.lat = self.gps_pos[0]
+        current_pos_msg.header.frame_id = "robot_position"
+        current_pos_msg.lat = self.gps_pos[0]
         current_pos_msg.lng = self.gps_pos[1]
         current_pos_msg.speed = self.speed
         current_pos_msg.orientation = self.psi

@@ -19,21 +19,6 @@ lat = -19.8695362
 lon = -43.9645532
 
 
-
-
-def getHTML(lat, lon):
-    maphtml = open('maps.html').read()
-    return maphtml
-
-getJsValue = """ 
-//var canvas = document.getElementById("map"); 
-//var img    = canvas.toDataURL("image/jpg"); 
-x = 10;
-y = 200;
-return x;
-"""  
-
-
 class StartQT4(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
@@ -91,9 +76,61 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.web.page().mainFrame().evaluateJavaScript('addMapImage('+ params +');')
         self.ui.web.page().mainFrame().evaluateJavaScript("setMap();")
 
+        #define the output json
+        self.saveExperimentData()
+
+       
+
+    def saveExperimentData(self, experiment_json = 'experiment.json', map_json = 'map.json'):
+        exp_data = {}
+        #get obstacles and waypoints from javascrip code
+        waypoints = self.ui.web.page().mainFrame().evaluateJavaScript("getWaypoints();").toPyObject()
+        obstacles = self.ui.web.page().mainFrame().evaluateJavaScript("getObstacles();").toPyObject()
+
+        exp_data['obstacles'] = obstacles
+        exp_data['waypoints'] = waypoints
+
+        #create directory for experiments
+        out_dir = 'experiment_config/'
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
+        #save the experiment images to an experiment folder
+        self.segmentation.saveAllImages(out_dir)
+
+        exp_data['image_src'] = self.segmentation.rgb_image_file
+        exp_data['image_segmented_src'] = self.segmentation.segmented_image_file
+        exp_data['segments'] = self.segmentation.segments_file
+
+        #data saved in map file
+        data = []
+        with open(map_json) as data_file:    
+            data = json.load(data_file)
+        
+        #save other information need for the experiment
+        exp_data['height'] = data['height']
+        exp_data['width'] = data['width']
+        ##position
+        exp_data['x_top_left'] = data['x_top_left']
+        exp_data['y_top_left'] = data['y_top_left']
+        exp_data['zoom'] = data['zoom']
+
+        exp_data['numtiles_x'] = data['numtiles_x']
+        exp_data['numtiles_y'] = data['numtiles_y'] 
+        #exp_data['image_segmented'] = self.segmentation.segmented_image
+        #exp_data['segments'] = self.segmentation.segments
+        #exp_data['image'] = self.segmentation.image
+
+        #save image data to json
+        with open(out_dir+experiment_json, 'w') as fp:
+            json.dump(exp_data, fp)
+
 
         #self.ctimer.start(1000)
     def saveWebImages(self, jsonFile = 'map.json', tmpDir = 'tmp/'):
+
+        if not os.path.exists(tmpDir):
+            os.makedirs(tmpDir)
         #get the image information from the qtweb
         imageList = self.ui.web.page().mainFrame().evaluateJavaScript('getImages();').toPyObject()
         data = {}
@@ -162,11 +199,11 @@ class StartQT4(QtGui.QMainWindow):
 
 
     def load_finished(self):
-        print "Load finished called"
+        print ("Load finished called")
         #print "alert({0});".format("hellow")
         #self.ui.web.page().mainFrame().evaluateJavaScript(("alert('{0}');".format("hellow")))
         #self.ui.web.page().mainFrame().evaluateJavaScript("alert('aaa');")
-        self.ui.web.page().mainFrame().evaluateJavaScript("updateMarkerPos('{0}', '{1}');".format(lat, lon))
+        #self.ui.web.page().mainFrame().evaluateJavaScript("updateMarkerPos('{0}', '{1}');".format(lat, lon))
      
         pass
 
@@ -174,7 +211,7 @@ class StartQT4(QtGui.QMainWindow):
         global lat
         lat += 1
         self.ui.web.setHtml(getHTML(lat, lon))
-        print "hi"
+        print ("hi")
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

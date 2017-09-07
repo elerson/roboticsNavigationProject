@@ -14,8 +14,8 @@ html = """
         <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=drawing"></script>
         <script src="http://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerwithlabel/src/markerwithlabel.js"></script>
         <script language="JavaScript">
-          var polylines = [];
-          var waypoint = [];
+          var obstacles = [];
+          var waypoints = [];
           var map = 'undefined';
           var overlay;
           USGSOverlay.prototype = new google.maps.OverlayView();
@@ -35,18 +35,15 @@ html = """
             map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
             drawingManager.setMap(map);
 
-            //google.maps.event.addListener(drawingManager, 'polylinecomplete', function(polyline) {
-            //  polylines.push(polyline);
-            //});
+            google.maps.event.addListener(drawingManager, 'polylinecomplete', function(polyline) {
+              waypoints.push(polyline);
+            });
+
             google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polyline) {
-              polylines.push(polyline);
+              obstacles.push(polyline);
             });
             
-
-
-            var bounds = new google.maps.LatLngBounds(
-              new google.maps.LatLng(62.281819, -150.287132),
-              new google.maps.LatLng(62.400471, -150.005608));
+            
 
             overlay = new USGSOverlay(map);
           }
@@ -56,6 +53,36 @@ html = """
 
           /* Waypoints functions */
           /**************************************************************************/
+          function getObstacles(){
+            obstacles_coords = [];
+            n_obstacles = obstacles.length;
+            for(var i = 0; i < n_obstacles; i++){
+              path = obstacles[i].getPath();
+              obstacle_c = [];
+              for(var j = 0; j < path.getLength(); j++){
+                var coords = [path.getAt(j).lat(), path.getAt(j).lng()];
+                obstacle_c.push(coords);                
+              }
+              obstacles_coords.push(obstacle_c);
+            }
+            return obstacles_coords;
+          }
+
+          function getWaypoints(){
+            waypoints_coords = [];
+            
+            if(waypoints.length == 0) return waypoints_coords;
+
+            path = waypoints[0].getPath();
+            for(var j = 0; j < path.getLength(); j++){
+              var coords = [path.getAt(j).lat(), path.getAt(j).lng()];
+              waypoints_coords.push(coords);                
+            }
+
+            return waypoints_coords;
+          }
+
+
           function pixelToLatlng(xcoor, ycoor) {
             var ne = map.getBounds().getNorthEast();
             var sw = map.getBounds().getSouthWest();
@@ -68,6 +95,17 @@ html = """
             //marker.setPosition(newLatlng);
             return newLatlng;
           };
+
+          function getCoordinates(x, y, zoom){
+          	x_ = (x/(Math.pow(2, zoom)))*256;
+            y_ = (y/(Math.pow(2, zoom)))*256;
+
+            //get the normalized tile bounds and convert to lng and lat
+            projection = map.getProjection();
+            coordinates = projection.fromPointToLatLng(new google.maps.Point(x_, y_));
+            return coordinates;
+
+          }
 
           function initWaypointMarker(size){
             var i;
@@ -171,11 +209,11 @@ html = """
             projection = map.getProjection();
 
             //convert the tile coordinates to a normalized 0-256
-            x_tl = (x_top_left/(Math.pow(2, zoom)))*256
-            y_tl = (y_top_left/(Math.pow(2, zoom)))*256
+            x_tl = (x_top_left/(Math.pow(2, zoom)))*256;
+            y_tl = (y_top_left/(Math.pow(2, zoom)))*256;
 
-            x_br = (x_bottom_right/(Math.pow(2, zoom)))*256
-            y_br = (y_bottom_right/(Math.pow(2, zoom)))*256
+            x_br = (x_bottom_right/(Math.pow(2, zoom)))*256;
+            y_br = (y_bottom_right/(Math.pow(2, zoom)))*256;
             
             //get the normalized tile bounds and convert to lng and lat
             top_left = projection.fromPointToLatLng(new google.maps.Point(x_tl, y_br));

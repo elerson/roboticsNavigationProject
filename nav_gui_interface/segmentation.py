@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import skimage
 from skimage import data, img_as_float
-from skimage.segmentation import felzenszwalb, slic, quickshift, watershed, chan_vese
+from skimage.segmentation import felzenszwalb, slic, quickshift
 from skimage.segmentation import mark_boundaries
 import cv2
 import base64
@@ -19,13 +19,19 @@ class Segmentation:
     self.base64_image = ''
     self.base64_segmented_image = ''
     self.tmpdir = tmpdir
+    self.rgb_image_file = 'rgbimage.jpg'
+    self.segmented_image_file = 'segmentedimage.jpg'
+    self.segments_file = 'segments'
+
   def segmentImage(self, level = 10000):
     self.segments = felzenszwalb(self.image, level)
     self.segmented_image = mark_boundaries(img_as_float(self.image), self.segments)
     self.getColoredSegments__()
+
   def setImage(self, image):
     self.image = image
-  def generateColors__(self, n_colors = 3000):
+
+  def generateColors__(self, n_colors = 10000):
     segments_nmb = n_colors
     # generate (r,g,b) color values
     for ind in range(segments_nmb):
@@ -33,6 +39,7 @@ class Segmentation:
       g = np.random.randint(255)
       b = np.random.randint(255)
       self.segments_colors.append((r,g,b))
+
   def getColoredSegments__(self):
     self.colored_segments = np.zeros([self.segments.shape[0],self.segments.shape[1],3], dtype=np.uint8)
     # segment labels which need to be displayed
@@ -42,15 +49,25 @@ class Segmentation:
       self.colored_segments[:,:,0][ segment_mask.nonzero() ] = self.segments_colors[int(lb)][0]
       self.colored_segments[:,:,1][ segment_mask.nonzero() ] = self.segments_colors[int(lb)][1]
       self.colored_segments[:,:,2][ segment_mask.nonzero() ] = self.segments_colors[int(lb)][2]
-  def buildImageAsBase64(self):
-    skimage.io.imsave(self.tmpdir+'rgbimage.jpg', self.image)
-    skimage.io.imsave(self.tmpdir+'segmentedimage.jpg', self.colored_segments)
 
-    with open(self.tmpdir+'rgbimage.jpg', "rb") as imageFile:
+  def buildImageAsBase64(self):
+    skimage.io.imsave(self.tmpdir+self.rgb_image_file, self.image)
+    skimage.io.imsave(self.tmpdir+self.segmented_image_file, self.colored_segments)
+
+
+    with open(self.tmpdir+self.rgb_image_file, "rb") as imageFile:
       self.base64_image = base64.b64encode(imageFile.read())
 
-    with open(self.tmpdir+'segmentedimage.jpg', "rb") as imageFile:
+    with open(self.tmpdir+self.segmented_image_file, "rb") as imageFile:
       self.base64_segmented_image = base64.b64encode(imageFile.read())
+
+  def saveAllImages(self, out_dir = 'config/' ):
+    skimage.io.imsave(out_dir+self.rgb_image_file, self.image)
+    skimage.io.imsave(out_dir+self.segmented_image_file, self.colored_segments)
+
+    np.save(out_dir+self.segments_file, self.segments)
+
+
 
 
 #segmentation = Segmentation()
