@@ -54,6 +54,7 @@ find_package(catkin REQUIRED COMPONENTS
    Gps_msg.msg
    Imu.msg
    Motor.msg
+   gps_coord.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -108,9 +109,10 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ros_tamiya
-  CATKIN_DEPENDS geometry_msgs nav_msgs rospy std_msgs
+  CATKIN_DEPENDS geometry_msgs nav_msgs rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
+
 
 ###########
 ## Build ##
@@ -169,7 +171,7 @@ include_directories(
 
 install(PROGRAMS
   src/gps_driver.py
-  src/node_tamiya.py
+  src/robot_controller_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

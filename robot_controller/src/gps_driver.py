@@ -11,7 +11,7 @@ import os, serial, sys, threading
 import math
 
 import rospy
-from ros_tamiya.msg import Gps_msg
+from robot_controller.msg import Gps_msg
 #############################################################################
 
 
@@ -85,6 +85,7 @@ class GPS:
 		while True:
 			# read one gps line
 			line = self._device.readline()
+
 			#print line
 			
 			# enter critical section

@@ -8,12 +8,12 @@ project(base_planner_cu)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  message_generation
   geometry_msgs
-  nav_msgs
-  roscpp
+  nav_msgs  
   sensor_msgs
   std_msgs
-  message_generation
+  roscpp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -144,6 +144,10 @@ add_executable(${PROJECT_NAME}_node src/base_planner_cu.cpp)
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
 )
+
+
+add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
+
 
 #add_dependencies(lib lib_gencpp)
 
