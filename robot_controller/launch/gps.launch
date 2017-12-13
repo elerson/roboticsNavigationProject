@@ -1,0 +1,9 @@
+<launch>
+  <arg name="port" default="/dev/ttyUSB0" />
+  <arg name="baud" default="19200" />
+  <node pkg="robot_controller" type="gps_driver.py" name="gps_node" output="screen">
+    	<param name="port" value="$(arg port)" />
+	<param name="baud" value="$(arg baud)"/>
+  </node>
+</launch>
+

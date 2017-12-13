@@ -214,6 +214,7 @@ class DynamicMap:
                 for y in range(int(min_y), int(max_y)):          
                     if(self.isPixelInsideObstacle(x, y)):
                         self.map[x,y] = 255
+            print('defining obstacles ... done')
 
 
 
